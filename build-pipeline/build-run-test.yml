@@ -1,0 +1,32 @@
+---
+resources:
+- name: maven-examples
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/mkyong/maven-examples.git
+jobs:
+- name: compile-run-unittest
+  plan:
+  - get: maven-examples
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3.6.3-jdk-11
+      inputs:
+      - name: maven-examples
+      outputs:
+      - name: build_out
+      params:
+        branch: master
+      run:
+       path: bash
+       args:
+       - -exec
+       - |
+          cd maven-examples/maven-unit-test/
+          mvn clean install
