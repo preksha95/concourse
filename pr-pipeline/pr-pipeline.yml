@@ -1,0 +1,61 @@
+---
+resource_types:
+
+- name: pull-request
+  type: docker-image
+  source:
+    repository: teliaoss/github-pr-resource
+
+resources:
+- name: maven-examples
+  type: pull-request
+  check_every: 1s
+  source:
+    repository: preksha95/maven-examples
+    access_token: ((github-access-token))
+
+
+
+jobs:
+- name: compile-run-unittest
+  plan:
+  - get: maven-examples
+    trigger: true
+    version: every
+  - put: maven-examples
+    params:
+      path: maven-examples
+      status: pending
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3.6.3-jdk-11
+      inputs:
+      - name: maven-examples
+      outputs:
+      - name: build_out
+      params:
+        branch: master
+      run:
+       path: bash
+       args:
+       - -exec
+       - |
+          cd maven-examples/maven-unit-test/
+          mvn clean install
+  on_success:
+    do:
+    - put: maven-examples
+      params:
+        path: maven-examples
+        status: success
+  on_failure:
+    do:
+    - put: maven-examples
+      params:
+        path: maven-examples
+        status: failure
