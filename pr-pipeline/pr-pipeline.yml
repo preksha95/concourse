@@ -9,7 +9,7 @@ resource_types:
 resources:
 - name: maven-examples
   type: pull-request
-  check_every: 1s
+  check_every: 10s
   source:
     repository: preksha95/maven-examples
     access_token: ((github-access-token))
